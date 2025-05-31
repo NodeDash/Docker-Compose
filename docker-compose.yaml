@@ -1,0 +1,92 @@
+services:
+
+  ux:
+    image: registry.nodedash.app/nodedash/nodedash-ux:1.0.0
+    container_name: ux
+    restart: always
+    environment:
+      - VITE_API_MODE=live
+      - VITE_API_URL=http://localhost:8081
+    ports:
+      - "8080:3000"
+    depends_on:
+      - api
+
+  api:
+    image: registry.nodedash.app/nodedash/nodedash-api:1.0.0
+    container_name: api
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nodedash
+      - REDIS_HOST=valkey
+      - SECRET_KEY=your_secure_secret_key
+    ports:
+      - "8081:8000"
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+
+  ingest:
+    image: registry.nodedash.app/nodedash/nodedash-ingest:1.0.0
+    container_name: ingest
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nodedash
+      - REDIS_HOST=valkey
+      - SECRET_KEY=your_secure_secret_key
+    ports:
+      - "8082:8000"
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+
+  service:
+    image: registry.nodedash.app/nodedash/nodedash-service:1.0.0
+    container_name: service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nodedash
+      - REDIS_HOST=valkey
+    depends_on:
+      - api
+
+  migrations:
+    image: registry.nodedash.app/nodedash/nodedash-api:1.0.0
+    container_name: migrations
+    restart: no
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nodedash
+    entrypoint: ["alembic", "upgrade", "head"]
+    depends_on:
+      - postgres
+      - valkey
+
+  postgres:
+    image: postgres:17.4
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=nodedash
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  valkey:
+    image: valkey/valkey:8.1.1-alpine3.21
+    container_name: valkey
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - valkey_data:/data
+
+volumes:
+  postgres_data:
+    driver: local
+  valkey_data:
+    driver: local
