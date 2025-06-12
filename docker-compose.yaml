@@ -1,7 +1,7 @@
 services:
 
   ux:
-    image: registry.nodedash.app/nodedash/ux:1.1.0
+    image: registry.nodedash.app/nodedash/ux:1.1.1
     container_name: ux
     restart: always
     environment:
@@ -13,7 +13,7 @@ services:
       - api
 
   api:
-    image: registry.nodedash.app/nodedash/api:1.1.0
+    image: registry.nodedash.app/nodedash/api:1.1.1
     container_name: api
     restart: always
     environment:
@@ -27,7 +27,7 @@ services:
         condition: service_completed_successfully
 
   ingest:
-    image: registry.nodedash.app/nodedash/ingest:1.1.0
+    image: registry.nodedash.app/nodedash/ingest:1.1.1
     container_name: ingest
     restart: always
     environment:
@@ -41,7 +41,7 @@ services:
         condition: service_completed_successfully
 
   service:
-    image: registry.nodedash.app/nodedash/service:1.1.0
+    image: registry.nodedash.app/nodedash/service:1.1.1
     container_name: service
     restart: always
     environment:
@@ -51,7 +51,7 @@ services:
       - api
 
   migrations:
-    image: registry.nodedash.app/nodedash/api:1.1.0
+    image: registry.nodedash.app/nodedash/api:1.1.1
     container_name: migrations
     restart: no
     environment:
